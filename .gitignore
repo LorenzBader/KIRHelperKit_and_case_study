@@ -41,6 +41,7 @@ build
 .idea/modules.xml
 .idea/*.iml
 .idea/modules
+.idea/.gitignore
 *.iml
 *.ipr
 
