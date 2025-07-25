@@ -96,7 +96,7 @@ class PerfMeasureExtension2(
     private fun initializeField(pluginContext: IrPluginContext, moduleFragment: IrModuleFragment): Pair<IrField, IrSimpleFunctionSymbol> {
         val sbClass = pluginContext.findClass("java/lang/StringBuilder")!!
         val constructor = sbClass.findConstructor(pluginContext)!!
-        val appendMethod = sbClass.findFunction(pluginContext, "append(string)", ignoreNullability = true)!!
+        val appendMethod = sbClass.findFunction(pluginContext, "append(string?)")!!
 
         // Define global sb field
         val firstFile = moduleFragment.files.first()
