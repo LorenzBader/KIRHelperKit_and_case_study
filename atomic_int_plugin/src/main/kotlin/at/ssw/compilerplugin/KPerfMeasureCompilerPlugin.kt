@@ -94,13 +94,13 @@ class PerfMeasureExtension2(
 
     @OptIn(UnsafeDuringIrConstructionAPI::class)
     private fun initializeField(pluginContext: IrPluginContext, moduleFragment: IrModuleFragment): Pair<IrField, IrSimpleFunctionSymbol> {
-        val atomicIntegerClass = //TODO!
-        val constructor = //TODO!
-        val incrementMethod = //TODO!
+        val atomicIntegerClass = pluginContext.findClass("java/util/concurrent/atomic/AtomicInteger")!!
+        val constructor = atomicIntegerClass.findConstructor(pluginContext)!!
+        val incrementMethod = atomicIntegerClass.findFunction(pluginContext, "getAndAdd(int)")!!
 
         // Define global counter field
         val firstFile = moduleFragment.files.first()
-        val counterField = //TODO!
+        val counterField = pluginContext.createField(firstFile.symbol, "_globalCounter") { constructor() }
         firstFile.declarations.add(counterField)
         counterField.parent = firstFile
 
@@ -110,7 +110,7 @@ class PerfMeasureExtension2(
     private fun generateCall(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, counterField: IrField, incrementMethod: IrSimpleFunctionSymbol): IrBlockBody {
         return builder.irBlockBody {
             enableCallDSL(pluginContext) {
-                //TODO! add increment call for counterField
+                +counterField.call(incrementMethod, 1)
 
                 for (stmt in statements) {
                     +stmt
@@ -118,7 +118,7 @@ class PerfMeasureExtension2(
 
                 // Print final value in main
                 if (methodName == "main") {
-                    //TODO! add println call for counterField
+                    +irPrintLn(pluginContext, counterField.call("toString()"))
                 }
             }
         }
