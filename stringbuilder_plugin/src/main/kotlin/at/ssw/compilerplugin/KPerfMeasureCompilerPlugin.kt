@@ -85,7 +85,7 @@ class PerfMeasureExtension2(
                     if (declaration.name.asString() in listOf("<init>", "<clinit>")) return declaration
                     if (declaration.origin == IrDeclarationOrigin.ADAPTER_FOR_CALLABLE_REFERENCE) return declaration
 
-                    declaration.body = generateCall(DeclarationIrBuilder(pluginContext, declaration.symbol), pluginContext, body.statements, declaration.name.asString(), sbField, appendMethod)
+                    declaration.body = buildNewMethodBody(DeclarationIrBuilder(pluginContext, declaration.symbol), pluginContext, body.statements, declaration.name.asString(), sbField, appendMethod)
                     return declaration
                 }
             }, null)
@@ -97,17 +97,19 @@ class PerfMeasureExtension2(
         val sbClass = pluginContext.findClass("java/lang/StringBuilder")!!
         val constructor = sbClass.findConstructor(pluginContext)!!
         val appendMethod = sbClass.findFunction(pluginContext, "append(string?)")!!
+        //alternatively: pluginContext.findFunction("java/lang/StringBuilder.append(string?)")!!
 
         // Define global sb field
         val firstFile = moduleFragment.files.first()
         val sbField = pluginContext.createField(firstFile.symbol, "_globalSB") { constructor() }
+        //alternatively: pluginContext.createField(firstFile.symbol, "_globalSB") { pluginContext.findConstructor("java/lang/StringBuilder()")!!() }
         firstFile.declarations.add(sbField)
         sbField.parent = firstFile
 
         return Pair(sbField, appendMethod)
     }
 
-    private fun generateCall(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, sbField: IrField, appendMethod: IrSimpleFunctionSymbol): IrBlockBody {
+    private fun buildNewMethodBody(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, sbField: IrField, appendMethod: IrSimpleFunctionSymbol): IrBlockBody {
         return builder.irBlockBody {
             enableCallDSL(pluginContext) {
                 +sbField.call(appendMethod, "$methodName --> ")
@@ -165,7 +167,7 @@ class PerfMeasureExtension2(
         return Pair(sbField, appendMethod, printlnFunc, toStringFunc)
     }
 
-    private fun generateCall(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, sbField: IrField, appendMethod: IrSimpleFunctionSymbol, printlnFunc : IrSimpleFunctionSymbol, toStringFunc: IrSimpleFunctionSymbol): IrBlockBody {
+    private fun buildNewMethodBody(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, sbField: IrField, appendMethod: IrSimpleFunctionSymbol, printlnFunc : IrSimpleFunctionSymbol, toStringFunc: IrSimpleFunctionSymbol): IrBlockBody {
         return builder.irBlockBody {
             +builder.irCall(appendFunc).apply {
                 dispatchReceiver = builder.irGetField(null, sbField)

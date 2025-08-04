@@ -85,7 +85,7 @@ class PerfMeasureExtension2(
                     if (declaration.name.asString() in listOf("<init>", "<clinit>")) return declaration
                     if (declaration.origin == IrDeclarationOrigin.ADAPTER_FOR_CALLABLE_REFERENCE) return declaration
 
-                    declaration.body = generateCall(DeclarationIrBuilder(pluginContext, declaration.symbol), pluginContext, body.statements, declaration.name.asString(), counterField, incrementMethod)
+                    declaration.body = buildNewMethodBody(DeclarationIrBuilder(pluginContext, declaration.symbol), pluginContext, body.statements, declaration.name.asString(), counterField, incrementMethod)
                     return declaration
                 }
             }, null)
@@ -94,33 +94,13 @@ class PerfMeasureExtension2(
 
     @OptIn(UnsafeDuringIrConstructionAPI::class)
     private fun initializeField(pluginContext: IrPluginContext, moduleFragment: IrModuleFragment): Pair<IrField, IrSimpleFunctionSymbol> {
-        val atomicIntegerClass = //TODO!
-        val constructor = //TODO!
-        val incrementMethod = //TODO!
-
-        // Define global counter field
-        val firstFile = moduleFragment.files.first()
-        val counterField = //TODO!
-        firstFile.declarations.add(counterField)
-        counterField.parent = firstFile
-
-        return Pair(counterField, incrementMethod)
+        //TODO: search for the java.util.concurrent.atomic.AtomicInteger class and its addAndGet method
+        //TODO: create a field of type AtomicInteger and return the field and the method symbol
     }
 
-    private fun generateCall(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, counterField: IrField, incrementMethod: IrSimpleFunctionSymbol): IrBlockBody {
+    private fun buildNewMethodBody(builder: DeclarationIrBuilder, pluginContext: IrPluginContext, statements: List<IrStatement>, methodName: String, counterField: IrField, incrementMethod: IrSimpleFunctionSymbol): IrBlockBody {
         return builder.irBlockBody {
-            enableCallDSL(pluginContext) {
-                //TODO! add increment call for counterField
-
-                for (stmt in statements) {
-                    +stmt
-                }
-
-                // Print final value in main
-                if (methodName == "main") {
-                    //TODO! add println call for counterField
-                }
-            }
+            //TODO: insert current statements + call to increment the counter in the new method body
         }
     }
 }
